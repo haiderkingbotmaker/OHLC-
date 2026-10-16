@@ -1,0 +1,12 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+python-dotenv==1.0.0
+websockets==12.0
+requests==2.31.0
+beautifulsoup4==4.12.3
+certifi>=2024.2.2
+urllib3==2.1.0
+fake-useragent==2.2.0
+numpy>=1.24.0
+websocket-client==1.6.4
+cloudscraper>=1.2.71
