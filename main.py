@@ -38,6 +38,12 @@ print(f"QUOTEX_PASSWORD: {'***' if os.getenv('QUOTEX_PASSWORD') else 'NOT SET'}"
 print(f"QUOTEX_HOST: {os.getenv('QUOTEX_HOST')}")
 print("="*50)
 
+# Used as the WebSocket User-Agent when a pre-supplied session token is used
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+)
+
 # Now import Quotex
 try:
     from pyquotex.stable_api import Quotex
@@ -100,7 +106,7 @@ def get_client() -> Quotex:
     if quotex_client is None:
         email = os.getenv("QUOTEX_EMAIL")
         password = os.getenv("QUOTEX_PASSWORD")
-        host = os.getenv("QUOTEX_HOST", "qxbroker.com")
+        host = os.getenv("QUOTEX_HOST", "market-qx.trade")
         if not email or not password:
             raise HTTPException(status_code=500, detail="QUOTEX_EMAIL and QUOTEX_PASSWORD must be set in environment variables")
 
@@ -118,6 +124,16 @@ def get_client() -> Quotex:
             proxies=proxies,
         )
         quotex_client.debug_ws_enable = False
+
+        # Optional: skip the login entirely by supplying a WebSocket session token
+        # captured from a real browser. Required because Cloudflare now serves a
+        # challenge on the sign-in page, which blocks all scripted logins.
+        ssid = os.getenv("QUOTEX_SSID")
+        if ssid:
+            cookies = os.getenv("QUOTEX_COOKIES")
+            user_agent = os.getenv("QUOTEX_USER_AGENT", DEFAULT_USER_AGENT)
+            print(f"Using pre-supplied session token (cookies: {'yes' if cookies else 'no'})")
+            quotex_client.set_session(user_agent=user_agent, cookies=cookies, ssid=ssid)
     return quotex_client
 
 async def _connection_keepalive():
